@@ -4,7 +4,7 @@ import cv2
 import pyperclip
 from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
-from detect_text import detect_bubbles_with_yolo
+from src.detect_text import detect_bubbles_with_yolo
 from src.crop_image import crop_text_regions
 from src.ocr import extract_text_from_images
 from src.translate import Translator
