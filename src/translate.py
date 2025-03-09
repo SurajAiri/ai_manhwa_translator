@@ -61,17 +61,21 @@ class Translator:
             print(f"OpenAI Translation Error: {e}")
             return None
 
+    def manual_translate_prompt(self, texts, lang='korean'):
+        return self.PROMPT.format(lang=lang, texts=texts)
+    
     def translate_text(self, texts,model='gemini', lang='korean',model_name=None, src_lang='ko'):
-        return {"data": ["Dirt. So, Daeho already changed clothes and went somewhere else?"]}
-        # print(model)
-        # if model == 'huggingface':
-        #     return self.__translate_huggingface(texts, src_lang)
-        # elif model == 'openai':
-        #     return self.__translate_openai(texts, model_name,lang=lang)
-        # elif model == 'gemini': # default
-        #     return self.__translate_gemini(texts, model_name,lang)
-        # else:
-        #     raise ValueError(f"Unsupported model: {model}")
+        print(model)
+        if model == 'huggingface':
+            return self.__translate_huggingface(texts, src_lang)
+        elif model == 'openai':
+            return self.__translate_openai(texts, model_name,lang=lang)
+        elif model == 'gemini': # default
+            return self.__translate_gemini(texts, model_name,lang)
+        elif model == 'manual':
+            return self.manual_translate_prompt(texts, lang)
+        else:
+            raise ValueError(f"Unsupported model: {model}")
         
 
 # example use

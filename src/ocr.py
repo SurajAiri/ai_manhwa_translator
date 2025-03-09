@@ -30,13 +30,11 @@ def extract_text_from_images(cropped_images):
         
         # Join the results into a single string
         text = " ".join(results).strip()
+
+        temp = {key: value for key, value in cropped.items() if key != 'image'}
+        temp['text'] = text 
         
         # Store the extracted text
-        extracted_texts.append({
-            "id": cropped['id'],
-            "text": text,  # Clean up the text
-            "bbox": cropped['bbox'],
-            "path": cropped['path']
-        })
+        extracted_texts.append(temp)
     
     return extracted_texts
