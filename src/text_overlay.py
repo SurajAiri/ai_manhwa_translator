@@ -193,7 +193,7 @@ def draw_rounded_rectangle(image, top_left, bottom_right, color, radius=10, thic
         
     return image
 
-def wrap_text_in_rounded_rectangle(image, text, bbox, font_face=cv2.FONT_HERSHEY_SIMPLEX, 
+def wrap_text_in_rounded_rectangle(image, text, bbox, draw_border=False, font_face=cv2.FONT_HERSHEY_SIMPLEX, 
                           base_font_scale=1.0, color=(0, 0, 0), thickness=3, 
                           bg_color=(255, 255, 255), padding=10, corner_radius=150):
     """
@@ -223,10 +223,9 @@ def wrap_text_in_rounded_rectangle(image, text, bbox, font_face=cv2.FONT_HERSHEY
     w_pad = w - (2 * padding)
     h_pad = h - (2 * padding)
     
-    # Draw rounded background rectangle
-    draw_rounded_rectangle(result, (x, y), (x + w, y + h), (0,0,0), radius=corner_radius, thickness=-1)
-    # Draw outer black rounded rectangle
-    draw_rounded_rectangle(result, (x, y), (x + w, y + h), (0,0,0), radius=corner_radius, thickness=-1)
+    if draw_border:
+        # Draw rounded background rectangle
+        draw_rounded_rectangle(result, (x, y), (x + w, y + h), (0,0,0), radius=corner_radius, thickness=-1)
     
     # Draw inner white rounded rectangle with 4px smaller dimensions
     border_gap = 4
@@ -388,6 +387,10 @@ def overlay_text(image, extracted_texts):
     for i, ext in enumerate(extracted_texts):
         bbox = ext['bbox']
         text = ext['translated_text']
+
+        if not text:
+            continue
+
         # print("original bbox: ",bbox)
         bbox = text_padding(bbox, padRatio=0.1)
         # print("new bbox: ",bbox)

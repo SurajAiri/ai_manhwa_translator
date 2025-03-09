@@ -11,7 +11,7 @@ from src.utility import parse_translation
 
 # Initialize the translator
 translator = Translator()
-image_path = "samples/sample4.jpg"
+image_path = "samples/sample3.jpg"
 output = cv2.imread(image_path)
 translation_model = "manual" # openai, manual, gemini (default)
 is_debug = False
