@@ -11,9 +11,9 @@ from src.utility import parse_translation
 
 # Initialize the translator
 translator = Translator()
-image_path = "samples/sample2.png"
+image_path = "samples/sample4.jpg"
 output = cv2.imread(image_path)
-translation_model = "gemini" # openai, manual, gemini (default)
+translation_model = "manual" # openai, manual, gemini (default)
 is_debug = False
 
 # Path to the image
@@ -39,7 +39,7 @@ if translation_model == "manual":
     pyperclip.copy(prompt)
     # wait for user input to continue
     input("Prompt copied to clipboard. Press Enter to continue...")
-    translated_texts = parse_translation(input("Enter the translated text (Paste \AI response): "))
+    translated_texts = parse_translation(input("Enter the translated text (Paste AI response): "))
 else:
     translated_texts = parse_translation(translator.translate_text(texts, model=translation_model))
 print("translated text: ",translated_texts)
