@@ -320,6 +320,22 @@ class ManhwaTranslatorApp(QMainWindow):
         batch_layout.addLayout(dir_layout)
         batch_layout.addLayout(batch_nav_layout)
         
+        # Batch view mode controls
+        batch_view_layout = QHBoxLayout()
+        batch_view_layout.addWidget(QLabel("View Mode:"))
+        
+        self.single_page_radio = QRadioButton("Single Page")
+        self.single_page_radio.setChecked(True)
+        self.single_page_radio.toggled.connect(self.toggle_batch_view_mode)
+        
+        self.sequential_page_radio = QRadioButton("Sequential View")
+        self.sequential_page_radio.toggled.connect(self.toggle_batch_view_mode)
+        
+        batch_view_layout.addWidget(self.single_page_radio)
+        batch_view_layout.addWidget(self.sequential_page_radio)
+        
+        batch_layout.addLayout(batch_view_layout)
+        
         # Add both widgets to the stack
         self.mode_stack.addWidget(single_mode_widget)
         self.mode_stack.addWidget(batch_mode_widget)
@@ -510,18 +526,31 @@ class ManhwaTranslatorApp(QMainWindow):
             self.image_counter_label.setText("0/0")
             self.prev_image_button.setEnabled(False)
             self.next_image_button.setEnabled(False)
+            
+            # Make sure navigation buttons are visible (in case sequential view was active)
+            self.prev_image_button.setVisible(True)
+            self.next_image_button.setVisible(True)
+            self.image_counter_label.setVisible(True)
+            
+            # Reset batch view mode
+            if hasattr(self, 'single_page_radio'):
+                self.single_page_radio.setChecked(True)
         
-        # Reset image display
-        self.image_display_label.clear()
-        self.image_display_label.setText("No image loaded")
+        # Safely reset image display
+        if hasattr(self, 'image_display_label'):
+            # Create a new display label
+            old_label = self.image_display_label
+            self.image_display_label = QLabel()
+            self.image_display_label.setAlignment(Qt.AlignCenter)
+            self.image_display_label.setText("No image loaded")
+            
+            # Safely replace widget in scroll area
+            self.image_scroll_area.takeWidget()  # Remove current widget
+            self.image_scroll_area.setWidget(self.image_display_label)
+            
+            # Delete old label later to avoid crash
+            old_label.deleteLater()
         
-        # Reset view toggles
-        self.view_toggle_group.setEnabled(False)
-        self.original_radio.setChecked(True)
-        self.debug_radio.setEnabled(False)
-        self.translated_radio.setEnabled(False)
-        
-        # Log mode change
         self.log(f"Switched to {'batch processing' if self.batch_mode else 'single image'} mode")
     
     def browse_file(self):
@@ -760,6 +789,12 @@ class ManhwaTranslatorApp(QMainWindow):
         self.image_display_label.setMinimumSize(scaled_pixmap.size())
 
     def toggle_image_view(self):
+        # If in batch sequential view, update the entire sequence
+        if self.batch_mode and hasattr(self, 'sequential_page_radio') and self.sequential_page_radio.isChecked():
+            self.create_sequential_view()
+            return
+        
+        # Otherwise, proceed with normal image toggle
         if self.original_radio.isChecked() and self.output_image is not None:
             self.display_image(cv_img=self.output_image)
             self.current_view = "original"
@@ -977,11 +1012,16 @@ class ManhwaTranslatorApp(QMainWindow):
                 # Enable save all button
                 self.batch_save_all_button.setEnabled(True)
                 
-                # Update current image view
-                self.load_batch_image_at_index()
-                
                 # Hide manual translation interface
                 self.manual_translation_group.setVisible(False)
+                
+                # Update view based on current mode
+                if hasattr(self, 'sequential_page_radio') and self.sequential_page_radio.isChecked():
+                    # Recreate sequential view with updated translations
+                    self.create_sequential_view()
+                else:
+                    # Update single page view
+                    self.load_batch_image_at_index()
                 
                 self.log("Batch translation completed successfully!")
                 
@@ -1081,6 +1121,121 @@ class ManhwaTranslatorApp(QMainWindow):
         # Using a small delay ensures the scroll area has been resized properly
         QApplication.processEvents()
         self.fit_image_to_width()
+
+    def create_sequential_view(self):
+        """Create a sequential view of all images in the batch"""
+        if not self.batch_image_paths:
+            return
+            
+        # Create a widget to hold all images vertically
+        container = QWidget()
+        layout = QVBoxLayout(container)
+        layout.setSpacing(20)  # Space between images
+        
+        # Add a title/header
+        header = QLabel(f"Sequential View - {len(self.batch_image_paths)} Images")
+        header.setAlignment(Qt.AlignCenter)
+        header.setStyleSheet("font-size: 16px; font-weight: bold; margin: 10px;")
+        layout.addWidget(header)
+        
+        # Add all images to the layout
+        for i, image_path in enumerate(self.batch_image_paths):
+            # Create frame for this image
+            frame = QFrame()
+            frame.setFrameShape(QFrame.StyledPanel)
+            frame.setLineWidth(1)
+            frame_layout = QVBoxLayout(frame)
+            
+            # Add image title
+            title = QLabel(f"Image {i+1}: {os.path.basename(image_path)}")
+            title.setAlignment(Qt.AlignCenter)
+            title.setStyleSheet("font-weight: bold;")
+            frame_layout.addWidget(title)
+            
+            # Create image label
+            img_label = QLabel()
+            img_label.setAlignment(Qt.AlignCenter)
+            
+            # Load image based on processing status
+            result = self.batch_results[i] if i < len(self.batch_results) and self.batch_results[i] is not None else None
+            
+            if result:
+                # Display based on current view toggle
+                if self.translated_radio.isChecked() and result.get("output_result") is not None:
+                    cv_img = result["output_result"]
+                elif self.debug_radio.isChecked() and result.get("output_debug") is not None:
+                    cv_img = result["output_debug"]
+                else:
+                    cv_img = result["output"]
+            else:
+                # Not processed yet, show original
+                cv_img = cv2.imread(image_path)
+            
+            # Convert to QPixmap
+            if cv_img is not None:
+                height, width, channel = cv_img.shape
+                bytes_per_line = 3 * width
+                q_img = QImage(cv_img.data, width, height, bytes_per_line, QImage.Format_RGB888).rgbSwapped()
+                pixmap = QPixmap.fromImage(q_img)
+                
+                # Scale to fit width while maintaining aspect ratio
+                scroll_width = self.image_scroll_area.viewport().width() - 40  # Accounting for margins
+                if width > scroll_width:
+                    pixmap = pixmap.scaledToWidth(scroll_width, Qt.SmoothTransformation)
+                
+                img_label.setPixmap(pixmap)
+            else:
+                img_label.setText("Failed to load image")
+            
+            # Add to layout
+            frame_layout.addWidget(img_label)
+            layout.addWidget(frame)
+        
+        # Add some spacing at the bottom
+        layout.addSpacing(20)
+        
+        # Set the container as the scroll area widget
+        self.image_scroll_area.setWidget(container)
+        self.image_scroll_area.verticalScrollBar().setValue(0)
+
+    def toggle_batch_view_mode(self):
+        """Toggle between single page and sequential page view modes"""
+        if not self.batch_image_paths:
+            return
+            
+        if self.single_page_radio.isChecked():
+            # Switch back to single page mode
+            self.log("Switched to single page view")
+            
+            # Create a new QLabel for display if needed
+            if not hasattr(self, 'image_display_label') or not self.image_display_label:
+                self.image_display_label = QLabel()
+                self.image_display_label.setAlignment(Qt.AlignCenter)
+            
+            # Restore the normal image display
+            self.image_scroll_area.takeWidget()  # Remove current widget safely
+            self.image_scroll_area.setWidget(self.image_display_label)
+            self.image_scroll_area.setWidgetResizable(True)
+            
+            # Show navigation buttons
+            self.prev_image_button.setVisible(True)
+            self.next_image_button.setVisible(True)
+            self.image_counter_label.setVisible(True)
+            
+            # Load current image
+            self.load_batch_image_at_index()
+            
+        elif self.sequential_page_radio.isChecked():
+            # Switch to sequential page mode
+            self.log("Switched to sequential page view")
+            
+            # Hide navigation buttons as they're not needed in sequential view
+            self.prev_image_button.setVisible(False)
+            self.next_image_button.setVisible(False)
+            self.image_counter_label.setVisible(False)
+            
+            # Create sequential view (this will create a new container widget)
+            self.create_sequential_view()
 
 
 if __name__ == "__main__":
