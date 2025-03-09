@@ -4,7 +4,7 @@ import os
 load_dotenv()
 
 class Translator:
-    PROMPT = "{texts} translate {lang} manhwa dialogue to english.if translation not possible keep "" Don't return anything else. return only list of translated text. in json format {{\"data\":[\"translation1\",\"translation2\"]}}"
+    PROMPT = "{texts} translate {lang} manhwa dialogue to english.if translation not possible keep \"\" as placeholder to maintain order of list  Don't return anything else. return only list of translated text. in json format {{\"data\":[\"translation1\",\"translation2\"]}}"
 
     def __translate_gemini(self, texts ,model_name = "gemini-1.5-flash", lang='korean'):
         """Translates text using the Gemini API."""
