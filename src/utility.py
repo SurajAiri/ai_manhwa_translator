@@ -33,7 +33,7 @@ def parse_translation(text):
         raise ValueError(f"Error parsing translation text: {e}. Please make sure the text is in JSON format.")
 
 
-# example use
-raw = """ hi this is just a test: {"data": ["Dirt. So, Daeho already changed clothes and went somewhere else?"]}"""
-translated_texts = parse_translation(raw)
-print(translated_texts)  # ['Dirt. So, Daeho already changed clothes and went somewhere else?']
+# # example use
+# raw = """ hi this is just a test: {"data": ["Dirt. So, Daeho already changed clothes and went somewhere else?"]}"""
+# translated_texts = parse_translation(raw)
+# print(translated_texts)  # ['Dirt. So, Daeho already changed clothes and went somewhere else?']
