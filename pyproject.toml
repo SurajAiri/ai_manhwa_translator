@@ -19,6 +19,7 @@ dependencies = [
     "opencv-python>=4.11.0.86",
     "pandas>=2.2.3",
     "pillow>=11.1.0",
+    "pyqt5>=5.15.11",
     "python-dotenv>=1.0.1",
     "sentencepiece>=0.2.0",
     "torch>=2.6.0",
