@@ -224,7 +224,19 @@ def wrap_text_in_rounded_rectangle(image, text, bbox, font_face=cv2.FONT_HERSHEY
     h_pad = h - (2 * padding)
     
     # Draw rounded background rectangle
-    draw_rounded_rectangle(result, (x, y), (x + w, y + h), bg_color, radius=corner_radius, thickness=-1)
+    draw_rounded_rectangle(result, (x, y), (x + w, y + h), (0,0,0), radius=corner_radius, thickness=-1)
+    # Draw outer black rounded rectangle
+    draw_rounded_rectangle(result, (x, y), (x + w, y + h), (0,0,0), radius=corner_radius, thickness=-1)
+    
+    # Draw inner white rounded rectangle with 4px smaller dimensions
+    border_gap = 4
+    draw_rounded_rectangle(result, 
+                          (x + border_gap, y + border_gap), 
+                          (x + w - border_gap, y + h - border_gap), 
+                          bg_color, 
+                          radius=corner_radius - border_gap, 
+                          thickness=-1)
+
     
     if not text or w_pad <= 0 or h_pad <= 0:
         return result
