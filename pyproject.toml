@@ -1,0 +1,26 @@
+[project]
+name = "ai-manhwa-translator"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "craft-text-detector>=0.4.1",
+    "easyocr>=1.7.2",
+    "google-generativeai>=0.8.4",
+    "jupyter>=1.1.1",
+    "manga-ocr>=0.1.14",
+    "matplotlib>=3.10.1",
+    "mmcv>=2.2.0",
+    "mmdet>=3.3.0",
+    "mmocr>=1.0.1",
+    "numpy>=2.2.3",
+    "openai>=1.65.2",
+    "opencv-python>=4.11.0.86",
+    "pandas>=2.2.3",
+    "pillow>=11.1.0",
+    "python-dotenv>=1.0.1",
+    "sentencepiece>=0.2.0",
+    "torch>=2.6.0",
+    "ultralytics>=8.3.23",
+]
