@@ -3,7 +3,7 @@ from src.text_area import detect_bubbles_with_yolo
 from src.crop_image import crop_text_regions
 from src.ocr import extract_text_from_images
 from src.translate import Translator
-from src.text_overlay import inpaint_text, overlay_text
+from src.text_overlay import  overlay_text
 import pyperclip
 import cv2
 from src.utility import parse_translation

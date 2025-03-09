@@ -1,7 +1,7 @@
 import cv2
 from ultralytics import YOLO
 
-MODEL_PATH = 'artifacts/models/best.pt'
+MODEL_PATH = 'artifacts/models/best (1).pt'
 
 def detect_bubbles_with_yolo(image_path):
     # Load pre-trained YOLO model
