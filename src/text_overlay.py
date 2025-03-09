@@ -44,7 +44,7 @@ def wrap_text_in_rectangle(image, text, bbox, font_face=cv2.FONT_HERSHEY_SIMPLEX
     h_pad = h - (2 * padding)
     
     # Draw background rectangle
-    cv2.rectangle(result, (x, y), (x + w, y + h), bg_color, -1)
+    cv2.rectangle(result, (y, x), (x + w, y + h), bg_color, -1)
     
     if not text or w_pad <= 0 or h_pad <= 0:
         return result
@@ -344,6 +344,33 @@ def wrap_text_in_rounded_rectangle(image, text, bbox, font_face=cv2.FONT_HERSHEY
         y_pos += line_heights[i] + padding
     
     return result
+def text_padding(bbox, padRatio=0.1):
+    """
+    Adjusts the bounding box coordinates by adding padding
+    
+    Args:
+        bbox: Tuple or list containing (x, y, w, h) coordinates
+        padRatio: Ratio of padding to be added
+        
+    Returns:
+        Adjusted coordinates (x, y, w, h) with padding
+    """
+    x1, y1, w, h = bbox
+
+    # Calculate padding values
+    padX = int(w * padRatio)
+    padY = int(h * padRatio)
+
+    # Apply padding
+    x1 += padX
+    y1 += padY
+    w -= padX * 2
+    h -= padY * 2
+
+    return x1, y1, w, h
+    
+
+    
 
 def overlay_text(image, extracted_texts):
     """
@@ -361,6 +388,9 @@ def overlay_text(image, extracted_texts):
     for i, ext in enumerate(extracted_texts):
         bbox = ext['bbox']
         text = ext['translated_text']
-        result = wrap_text_in_rounded_rectangle(result, text, bbox)
+        # print("original bbox: ",bbox)
+        bbox = text_padding(bbox, padRatio=0.1)
+        # print("new bbox: ",bbox)
+        result = wrap_text_in_rounded_rectangle(result, text,bbox)
     
     return result

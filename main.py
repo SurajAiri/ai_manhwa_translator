@@ -23,7 +23,6 @@ print("detect bubble: ",result)
 # filter the bubbles
 bubbles = [bubble for bubble in result if bubble['confidence'] > 0.5]
 
-
 # cropping image
 cropped_texts = crop_text_regions(output, bubbles, is_debug=is_debug)
 # print("cropped text: ",cropped_texts)
@@ -54,6 +53,11 @@ for i, text_info in enumerate(extracted_texts):
 
 print("after translation, extracted text: ",extracted_texts)
 
+# Display the debug image
+if is_debug:
+    cv2.imshow("Debug", output_debug)
+
+
 # extracted_texts = [{'id': 0, 'text': '흙. 그럼 대호는 벌써 옷올 갈아입고 다른 곳으로 갖나  ?', 'bbox': (468, 79, 954, 588), 'path': 'cropped_texts/bubble_0.png', 'translated_text': 'Dirt. So, Daeho already changed clothes and went somewhere else?'}]
 
 
@@ -63,10 +67,12 @@ output = overlay_text(output, extracted_texts)
 # save the result
 cv2.imwrite("output.png", output)
 
-# Display the result
-if is_debug:
-    cv2.imshow("Debug", output_debug)
+# print mouse position when left mouse button is clicked
+def click_event(event, x, y, flags, param):
+    if event == cv2.EVENT_LBUTTONDOWN:
+        print(x, y)
 
 cv2.imshow("Result", output)
+cv2.setMouseCallback("Result", click_event)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
